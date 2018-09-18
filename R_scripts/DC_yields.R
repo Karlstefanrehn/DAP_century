@@ -501,6 +501,36 @@ mod.crp.trt.phs = rbind(ddply(mod.raw.ylds, c("site", "trt", "rot_phs", "source"
                               ymax=mean(stvr)+(sd(stvr)/sqrt(length(stvr))),
                               type = "Stover"))
 
+mod.site.phs = rbind(ddply(mod.raw.ylds, c("rot_phs", "crop", "source"), summarise,
+                           N = length(cgrain),
+                           mean = mean(cgrain),
+                           se = sd(cgrain)/sqrt(length(cgrain)),
+                           ymin=mean(cgrain)-(sd(cgrain)/sqrt(length(cgrain))),
+                           ymax=mean(cgrain)+(sd(cgrain)/sqrt(length(cgrain))),
+                           type = "Grain"),
+                     ddply(mod.raw.ylds, c("rot_phs", "crop", "source"), summarise,
+                           N = length(stvr),
+                           mean = mean(stvr),
+                           se = sd(stvr)/sqrt(length(stvr)),
+                           ymin=mean(stvr)-(sd(stvr)/sqrt(length(stvr))),
+                           ymax=mean(stvr)+(sd(stvr)/sqrt(length(stvr))),
+                           type = "Stover"))
+
+mod.crops = rbind(ddply(mod.raw.ylds, c("crop", "source"), summarise,
+                        N = length(cgrain),
+                        mean = mean(cgrain),
+                        se = sd(cgrain)/sqrt(length(cgrain)),
+                        ymin=mean(cgrain)-(sd(cgrain)/sqrt(length(cgrain))),
+                        ymax=mean(cgrain)+(sd(cgrain)/sqrt(length(cgrain))),
+                        type = "Grain"),
+                  ddply(mod.raw.ylds, c("crop", "source"), summarise,
+                        N = length(stvr),
+                        mean = mean(stvr),
+                        se = sd(stvr)/sqrt(length(stvr)),
+                        ymin=mean(stvr)-(sd(stvr)/sqrt(length(stvr))),
+                        ymax=mean(stvr)+(sd(stvr)/sqrt(length(stvr))),
+                        type = "Stover"))
+
 ### Remove all unwanted objects in the environment (all but mod...?)
 
 rm(list = grep("^mod.", ls(), value = TRUE, invert = TRUE))

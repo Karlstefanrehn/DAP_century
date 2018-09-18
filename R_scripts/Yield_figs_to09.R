@@ -60,6 +60,11 @@ mm.slp.treat.all = merge(meas.slp.treat.all, mod.slp.treat.all, by=c("site","cro
 mm.slp.trt.all = merge(meas.slp.trt.all, mod.slp.trt.all, by=c("site","crop","trt","slope","type"))
 mm.ylds = merge(meas.ylds, mod.ylds, by=c("year","rot_phs","site","crop","type"))
 mm.phs = merge(meas.phs, mod.phs, by=c("rot_phs","site","crop","type"))
+mm.site.phs = merge(meas.site.phs, mod.site.phs, by=c("rot_phs","crop","type"))
+mm.crops = merge(meas.crops, mod.crops, by=c("crop","type"))
+
+write.csv(mm.all, file=file.path(figdir, "1985-2009_crop_yields_bysite.csv"))
+write.csv(mm.crops, file=file.path(figdir, "1985-2009_crop_yields.csv"))
 
 # RAW COMPARISON OBJECT (USED FOR STATS)
 mm.raw = mm.raw[mm.raw$crop %in% c("Corn", "Wheat", "Sorghum", "Millet"),] # Choose the crops you want to compare
@@ -139,74 +144,77 @@ p.yld.mm.all = ggplot(temp, aes(x = type, y = mean)) +
 
 ### GRAPHING THE USUAL 1:1 GRAPHS WE EXPECT TO SEE (COLOURED BY SITE)
 
+# NOTE - This below is the RMSE of all grain and stover yields compared across all sites, slopes, crops, treatments and years (i.e. everything)
+sqrt(mean((mm.raw$mean.y-mm.raw$mean.x)^2, na.rm=T))
+sqrt(mean((mm.raw$mean.y-mm.raw$mean.x)^2, na.rm=T))/0.44*10 # And in kg/ha
+
+# To calculate RMSE for each crop (pools over )
+mm.rmse.crp = function(df){
+  output = data.frame(crop="Sorghum",rmse=NA,rsq=NA,mae=NA)
+  for (crp in crops){
+    if(nrow(df[df$crop==crp,])<1) next
+    newdf = df[df$crop==crp,]
+    rms = sqrt(mean((newdf$mean.y-newdf$mean.x)^2, na.rm=T))
+    me = mean(abs((newdf$mean.y-newdf$mean.x)), na.rm=T)
+    print(rms)
+    lmod = lm(mean.y~mean.x+0, newdf)
+    rs = summary(lmod)$r.squared
+    output = rbind(output, data.frame(crop=crp,rmse=rms,rsq=rs,mae=me))
+  }
+  return(output)
+}
+
+dummy = mm.rmse.crp(mm.raw)
+dummy = dummy[-1,] # Drop first row
+mm.ylds = mm.ylds[mm.ylds$crop %in% c("Corn", "Wheat", "Sorghum", "Millet"),] # Choose the crops you want to compare
+temp = merge(dummy, mm.ylds, all=T)
+
 my.formula = y ~ x - 1 # Formula used to define desired relationship - for measured-modelled comparison this is 1:1 with no intercept
 
-mm.ylds = mm.ylds[mm.ylds$crop %in% c("Corn", "Wheat", "Sorghum", "Millet"),] # Choose the crops you want to compare
+### STOVER AND GRAIN TOGETHER
+temp$crop = factor(temp$crop, levels = c("Wheat", "Corn", "Millet", "Sorghum")) # Relevel the crops that are plotted from most to least 'common'
 
-### STOVER
-p.stv.mm = ggplot(mm.ylds[mm.ylds$type=="Stover",], aes(x = mean.x, y = mean.y, colour = site)) +
-  geom_point() +
-  geom_smooth(method="lm",formula=my.formula,se=F) +
+p.ylds.mm = ggplot(temp, aes(x = mean.x/0.44*10, y = mean.y/0.44*10)) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Wheat",],1), aes(y=6500, x=1000, label = paste("R2=", round(rsq, 2))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Wheat",],1), aes(y=7000, x=1000, label = paste("RMSE=", round(rmse/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Wheat",],1), aes(y=7500, x=1000, label = paste("MAE=", round(mae/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Corn",],1), aes(y=6500, x=1000, label = paste("R2=", round(rsq, 2))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Corn",],1), aes(y=7000, x=1000, label = paste("RMSE=", round(rmse/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Corn",],1), aes(y=7500, x=1000, label = paste("MAE=", round(mae/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Millet",],1), aes(y=6500, x=1000, label = paste("R2=", round(rsq, 2))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Millet",],1), aes(y=7000, x=1000, label = paste("RMSE=", round(rmse/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Millet",],1), aes(y=7500, x=1000, label = paste("MAE=", round(mae/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Sorghum",],1), aes(y=6500, x=1000, label = paste("R2=", round(rsq, 2))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Sorghum",],1), aes(y=7000, x=1000, label = paste("RMSE=", round(rmse/0.44*10, 0))), size=3) +
+  geom_text(data=head(temp[!rowSums(is.na(temp))&temp$crop=="Sorghum",],1), aes(y=7500, x=1000, label = paste("MAE=", round(mae/0.44*10, 0))), size=3) +
+  geom_point(aes(pch=type, colour = site)) +
   geom_abline(intercept=0, slope=1, linetype='dotted') +
   facet_wrap(~crop, nrow = 2) +
-  geom_errorbar(aes(ymax=ymax.y, ymin=ymin.y), alpha = 1) +
-  geom_errorbarh(aes(xmax=ymax.x, xmin=ymin.x), alpha = 1) +
-  scale_y_continuous(expand=c(0,0), limits=c(0,599)) +
-  scale_x_continuous(expand=c(0,0), limits=c(0,599)) +
-  ggtitle("Stover yields averaged over all treatments and all slopes") +
-  ylab(expression(paste("Modelled Stover Yield (gC ", m^-2,")"))) +
-  xlab(expression(paste("Measured Stover Yield (gC ", m^-2,")"))) +
+  geom_errorbar(aes(ymax=ymax.y/0.44*10, ymin=ymin.y/0.44*10, colour = site), alpha = 1) +
+  geom_errorbarh(aes(xmax=ymax.x/0.44*10, xmin=ymin.x/0.44*10, colour = site), alpha = 1) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,8100)) +
+  scale_x_continuous(expand=c(0,0), limits=c(0,8100)) +
+  ylab(expression(paste("Modelled Yields (kg ", ha^-1,")"))) +
+  xlab(expression(paste("Measured Yields (kg ", ha^-1,")"))) +
+  geom_smooth(method="lm",formula=my.formula,se=F, colour='black', fullrange=T) +
   theme(legend.title = element_text(size=14),
         legend.text = element_text(size=12),
         strip.text.x = element_text(size=14),
         axis.title.y = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5),
+        axis.text.x = element_text(angle = 45, hjust = 0.8, vjust = 0.8),
         axis.title.x = element_text(size=14),
         axis.text = element_text(size = 12, colour = 'black'),
         panel.background = element_blank(),
         axis.line = element_line(colour='black'),
         panel.grid = element_blank()) +
-  scale_fill_manual("Site",
-                    values = c("coral2","cornflowerblue", "darkgreen"),
-                    labels = c("Sterling", "Stratton", "Walsh")) +
   scale_colour_manual("Site",
                       values = c("coral2","cornflowerblue", "darkgreen"),
                       labels = c("Sterling", "Stratton", "Walsh")) +
+  scale_shape_manual("Yield Type",
+                      values = c(16,17),
+                      labels = c("Grain", "Stover")) +
   scale_linetype(guide=F) +
-  scale_shape(guide=F) +
-  scale_size(guide=F)
-
-### GRAIN
-p.grn.mm = ggplot(mm.ylds[mm.ylds$type=="Grain",], aes(x = mean.x, y = mean.y, colour = site)) +
-  geom_point() +
-  geom_smooth(method="lm",formula=my.formula,se=F) +
-  geom_abline(intercept=0, slope=1, linetype='dotted') +
-  facet_wrap(~crop, nrow = 2) +
-  geom_errorbar(aes(ymax=ymax.y, ymin=ymin.y), alpha = 1) +
-  geom_errorbarh(aes(xmax=ymax.x, xmin=ymin.x), alpha = 1) +
-  scale_y_continuous(expand=c(0,0), limits=c(0,299)) +
-  scale_x_continuous(expand=c(0,0), limits=c(0,299)) +
-  ggtitle("Grain yields averaged over all treatments and all slopes") +
-  ylab(expression(paste("Modelled Grain Yield (gC ", m^-2,")"))) +
-  xlab(expression(paste("Measured Grain Yield (gC ", m^-2,")"))) +
-  theme(legend.title = element_text(size=14),
-        legend.text = element_text(size=12),
-        strip.text.x = element_text(size=14),
-        axis.title.y = element_text(size=14),
-        plot.title = element_text(size=18, hjust=0.5),
-        axis.title.x = element_text(size=14),
-        axis.text = element_text(size = 12, colour = 'black'),
-        panel.background = element_blank(),
-        axis.line = element_line(colour='black'),
-        panel.grid = element_blank()) +
-  scale_fill_manual("Site",
-                    values = c("coral2","cornflowerblue", "darkgreen"),
-                    labels = c("Sterling", "Stratton", "Walsh")) +
-  scale_colour_manual("Site",
-                      values = c("coral2","cornflowerblue", "darkgreen"),
-                      labels = c("Sterling", "Stratton", "Walsh")) +
-  scale_linetype(guide=F) +
-  scale_shape(guide=F) +
   scale_size(guide=F)
 
 ### USING ALL YEARS TO PLOT TIME-COURSE
@@ -259,8 +267,7 @@ p.grain.yld = ggplot(temp[temp$type=="Grain",], aes(x = year, y = mean, fill = s
         panel.grid = element_blank())
 
 ggsave(p.yld.mm.all, file=file.path(figdir,"mm_all_avgs.pdf"), width=300, height=300, units="mm")
-ggsave(p.grn.mm, file=file.path(figdir,"mm_grn_bycrop.pdf"), width=350, height=350, units="mm")
-ggsave(p.stv.mm, file=file.path(figdir,"mm_stv_bycrop.pdf"), width=350, height=350, units="mm")
+ggsave(p.ylds.mm, file=file.path(figdir,"Figure X - Crop yield comparison.pdf"), width=250, height=250, units="mm")
 ggsave(p.stover.yld, file=file.path(figdir,"mm_stv_overyrs.pdf"), width=550, height=250, units="mm")
 ggsave(p.grain.yld, file=file.path(figdir,"mm_grn_overyrs.pdf"), width=550, height=250, units="mm")
 
@@ -325,7 +332,7 @@ p.rotation.ylds = ggplot(temp, aes(x = type, y = mean)) +
   facet_wrap(~site*trt, nrow=3) +
   geom_errorbar(aes(ymax=ymax, ymin=ymin, fill=source), position = dodge, width = 0.25, alpha = 1) +
   scale_y_continuous(expand=c(0,0), limits=c(0,290)) +
-  ylab(expression(paste("Yields (gC ", m^-2,")"))) +
+  ylab(expression(paste("Average Yields (gC ", m^-2,")"))) +
 #  ggtitle("Averaged over all years and all slopes") +
   theme(legend.title = element_blank(),
         legend.text = element_text(size=12),

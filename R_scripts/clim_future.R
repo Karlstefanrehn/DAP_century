@@ -134,7 +134,7 @@ p.GCM.rain = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
   facet_wrap(~site*RCP, ncol=2) +
   scale_y_continuous(expand=c(0,0), limits=c(0,50000)) +
   scale_x_datetime(expand=c(0,0)) +
-  ggtitle("Variation in Cumulative rainfall over time") +
+#  ggtitle("Variation in Cumulative rainfall over time") +
   ylab(expression(paste("Cumulative Rainfall (mm)"))) +
   xlab(expression(paste("Time"))) +
   theme(legend.title = element_text(size=14),
@@ -148,6 +148,89 @@ p.GCM.rain = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
         axis.line = element_line(colour='black'),
         panel.grid = element_blank())
 
+# Also plot monthly (mrain) or annual (arain) rainfall
+p.GCM.mrain = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
+  geom_line(aes(y=rain*10, colour=GCM)) +
+  geom_line(aes(y=ref.rain*10), linetype='dashed', size=1, alpha=0.75) +
+  geom_smooth(aes(y=rain*10), se=T) +
+  facet_wrap(~site*RCP, ncol=2) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,500)) +
+  scale_x_datetime(expand=c(0,0)) +
+#  ggtitle("Variation in monthly rainfall over time") +
+  ylab(expression(paste("Monthly precipitation (mm)"))) +
+  xlab(expression(paste("Time"))) +
+  theme(legend.title = element_text(size=14),
+        legend.text = element_text(size=12),
+        strip.text.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.title.x = element_text(size=14),
+        axis.text = element_text(size = 12, colour = 'black'),
+        panel.background = element_blank(),
+        axis.line = element_line(colour='black'),
+        panel.grid = element_blank())
+
+# Calculate annual rainfall values
+annual_rain = future_clim[future_clim$year>1984,][,list(ann.rain = sum(rain),
+                                ann.ref.rain = sum(ref.rain),
+                                N = length(rain)),
+                       by=list(year,site,GCM,RCP)]
+
+annual_rain = annual_rain[annual_rain$N==12,] # There must be 12 months recorded to be a valid year
+
+p.GCM.arain = ggplot(annual_rain[annual_rain$year>2009,], aes(x=year)) +
+  geom_line(aes(y=ann.rain*10, colour=GCM)) +
+  geom_line(aes(y=ann.ref.rain*10), linetype='dashed', size=1, alpha=0.75) +
+  geom_smooth(aes(y=ann.rain*10), se=T) +
+  facet_wrap(~site*RCP, ncol=2) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,1000)) +
+  scale_x_continuous(expand=c(0,0), limits=c(2009,2100), breaks=c(2020,2040,2060,2080,2100)) +
+#  ggtitle("Variation in annual rainfall over time") +
+  ylab(expression(paste("Annual precipitation (mm)"))) +
+  xlab(expression(paste("Time"))) +
+  theme(legend.title = element_text(size=14),
+        legend.text = element_text(size=12),
+        strip.text.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.title.x = element_text(size=14),
+        axis.text = element_text(size = 12, colour = 'black'),
+        panel.background = element_blank(),
+        axis.line = element_line(colour='black'),
+        panel.grid = element_blank())
+
+### DO THE SAME BUT ACROSS ALL 3 SITES (REGIONAL)
+
+annual_rain2 = annual_rain[,list(ann.rain = mean(ann.rain), # Average over the three sites
+                                 ann.ref.rain = mean(ann.ref.rain),
+                                 N = length(ann.rain)),
+                           by=list(year,GCM,RCP)]
+
+annual_rain2 = annual_rain2[annual_rain2$N==3,] # There must be data from all 3 sites for the average to be valid
+annual_rain2$RCP = revalue(annual_rain2$RCP, c("RCP45"="RCP 4.5", "RCP85"="RCP 8.5")) # Rename the rcp levels to display properly
+
+p.GCM.arain2 = ggplot(annual_rain2[annual_rain2$year>2009,], aes(x=year)) +
+  geom_line(aes(y=ann.rain*10, colour=GCM)) +
+  geom_line(aes(y=ann.ref.rain*10), linetype='dashed', size=1, alpha=0.75) +
+  geom_smooth(aes(y=ann.rain*10), se=F) +
+  facet_wrap(~RCP, ncol=2) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,1000)) +
+  scale_x_continuous(expand=c(0,0), limits=c(2009,2101), breaks=c(2020,2040,2060,2080,2100)) +
+  #  ggtitle("Variation in annual rainfall over time") +
+  ylab(expression(paste("Annual precipitation (mm)"))) +
+  xlab(expression(paste("Time"))) +
+  theme(legend.title = element_text(size=18),
+        legend.text = element_text(size=16),
+        strip.text.x = element_text(size=18),
+        axis.title.y = element_text(size=18),
+        plot.title = element_text(size=22, hjust=0.5),
+        axis.title.x = element_text(size=18),
+        axis.text = element_text(size = 16, colour = 'black'),
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        panel.background = element_blank(),
+        axis.line = element_line(colour='black'),
+        panel.grid = element_blank())
+
 # TEMPERATURE
 
 p.GCM.stemp = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
@@ -157,7 +240,7 @@ p.GCM.stemp = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
   facet_wrap(~site*RCP, ncol=2) +
   scale_y_continuous(expand=c(0,0), limits=c(0,27)) +
   scale_x_datetime(expand=c(0,0)) +
-  ggtitle("Variation in monthly average soil temperature over time") +
+#  ggtitle("Variation in monthly average soil temperature over time") +
   ylab(expression(paste("Soil temperature (deg C)"))) +
   xlab(expression(paste("Time"))) +
   theme(legend.title = element_text(size=14),
@@ -178,7 +261,7 @@ p.GCM.tave = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
   facet_wrap(~site*RCP, ncol=2) +
   scale_y_continuous(expand=c(0,0), limits=c(0,27)) +
   scale_x_datetime(expand=c(0,0)) +
-  ggtitle("Variation in monthly average air temperature over time") +
+#  ggtitle("Variation in monthly average air temperature over time") +
   ylab(expression(paste("Air temperature (deg C)"))) +
   xlab(expression(paste("Time"))) +
   theme(legend.title = element_text(size=14),
@@ -192,6 +275,60 @@ p.GCM.tave = ggplot(future_clim[future_clim$year>2009,], aes(x=date)) +
         axis.line = element_line(colour='black'),
         panel.grid = element_blank())
 
-ggsave(p.GCM.rain, file=file.path(figdir,"rainfall_variation.pdf"), width=300, height=350, units="mm")
+### AND AVERAGED OVER ALL 3 SITES (REGIONAL) - TO COMPLIMENT REGIONAL PRECIP FIGURE
+
+regional.atemp = future_clim[future_clim$year>1985,]
+regional.atemp = regional.atemp[,list(a.tave = mean(a.tave), # Average over the three sites
+                                 ref.tave = mean(ref.tave),
+                                 N = length(a.tave)),
+                           by=list(date,year,GCM,RCP)]
+
+regional.atemp = regional.atemp[regional.atemp$N==3,] # There must be data from all 3 sites for the average to be valid
+regional.atemp$RCP = revalue(regional.atemp$RCP, c("RCP45"="RCP 4.5", "RCP85"="RCP 8.5")) # Rename the rcp levels to display properly
+
+p.GCM.tave2 = ggplot(regional.atemp[regional.atemp$year>2009,], aes(x=date)) +
+  geom_line(aes(y=a.tave, colour=GCM)) +
+  geom_line(aes(y=ref.tave), linetype='dashed', size=1, alpha=0.75) +
+  geom_smooth(aes(y=a.tave), se=T) +
+  facet_wrap(~RCP, ncol=2) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,27)) +
+  scale_x_datetime(expand=c(0,0)) +
+  #  ggtitle("Variation in monthly average air temperature over time") +
+  ylab(expression(paste("Air temperature (",~degree*C,")"))) +
+  xlab(expression(paste("Time"))) +
+  theme(legend.title = element_text(size=18),
+        legend.text = element_text(size=16),
+        strip.text.x = element_text(size=18),
+        axis.title.y = element_text(size=18),
+        plot.title = element_text(size=22, hjust=0.5),
+        axis.title.x = element_text(size=18),
+        axis.text = element_text(size = 16, colour = 'black'),
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        panel.background = element_blank(),
+        axis.line = element_line(colour='black'),
+        panel.grid = element_blank())
+
+ggsave(p.GCM.rain, file=file.path(figdir,"cum_rainfall_variation.pdf"), width=300, height=350, units="mm")
+ggsave(p.GCM.arain, file=file.path(figdir,"rainfall_variation.pdf"), width=400, height=350, units="mm")
 ggsave(p.GCM.stemp, file=file.path(figdir,"soil_temp_variation.pdf"), width=400, height=350, units="mm")
 ggsave(p.GCM.tave, file=file.path(figdir,"air_temp_variation.pdf"), width=400, height=350, units="mm")
+
+library(ggplot2)
+library(gridExtra)
+library(grid)
+
+grid_arrange_shared_legend <- function(...) {
+  plots <- list(...)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  grid.arrange(
+    do.call(arrangeGrob, lapply(plots, function(x)
+      x + theme(legend.position="none"))),
+    legend,
+    ncol = 1,
+    heights = unit.c(unit(1, "npc") - lheight, lheight))
+}
+
+p.clim.regional = grid_arrange_shared_legend(p.GCM.tave2,p.GCM.arain2, ncol = 1)
+ggsave(p.clim.regional, file=file.path(figdir, "Climate_variability.pdf"), width=450, height=335, units="mm")    

@@ -331,23 +331,23 @@ meas.raw.ylds$trt = factor(meas.raw.ylds$trt, levels = c("WF","WCM","WCF","WCMF"
 ###### CORRECT YIELD OBJECTS INTO COMPARIBLE AND CONSISTANT UNITS
 
 # Constant to correct for 'exact' carbon and moisture contents
-crn.c.st = 0.43   # Corn stover carbon fraction (i.e. 0-1)
+crn.c.st = 0.45   # Corn stover carbon fraction (i.e. 0-1)
 crn.moist.st = 0  # Corn stover mositure % (i.e. 0-100)
 crn.c.gr = 0.45   # Corn grain carbon fraction (i.e. 0-1)
 crn.moist.gr = 0  # Corn grain moisture % (i.e. 0-100)
-wht.c.st = 0.43   # Wheat stover...
+wht.c.st = 0.45   # Wheat stover...
 wht.moist.st = 0
 wht.c.gr = 0.45   # Wheat grain...
 wht.moist.gr = 0
-mil.c.st = 0.43   # Millet...
+mil.c.st = 0.45   # Millet...
 mil.moist.st = 0
 mil.c.gr = 0.45
 mil.moist.gr = 0
-srg.c.st = 0.43  # Sorghum...
+srg.c.st = 0.45  # Sorghum...
 srg.moist.st = 0
 srg.c.gr = 0.45
 srg.moist.gr = 0
-syb.c.st = 0.43  # Soybean...
+syb.c.st = 0.45  # Soybean...
 syb.moist.st = 0
 syb.c.gr = 0.45
 syb.moist.gr = 0
@@ -625,6 +625,36 @@ meas.crp.trt.phs = rbind(ddply(meas.raw.ylds[complete.cases(meas.raw.ylds$st_yld
                                ymin=mean(gr_yld)-(sd(gr_yld)/sqrt(length(gr_yld))),
                                ymax=mean(gr_yld)+(sd(gr_yld)/sqrt(length(gr_yld))),
                                type="Grain"))
+
+meas.site.phs = rbind(ddply(meas.raw.ylds[complete.cases(meas.raw.ylds$st_yld),], c("rot_phs", "crop", "source"), summarise,
+                            N=length(st_yld),
+                            mean=mean(st_yld),
+                            se=sd(st_yld)/sqrt(length(st_yld)),
+                            ymin=mean(st_yld)-(sd(st_yld)/sqrt(length(st_yld))),
+                            ymax=mean(st_yld)+(sd(st_yld)/sqrt(length(st_yld))),
+                            type="Stover"),  
+                      ddply(meas.raw.ylds[complete.cases(meas.raw.ylds$gr_yld),], c("rot_phs", "crop", "source"), summarise,
+                            N=length(gr_yld),                                             
+                            mean=mean(gr_yld),
+                            se=sd(gr_yld)/sqrt(length(gr_yld)),
+                            ymin=mean(gr_yld)-(sd(gr_yld)/sqrt(length(gr_yld))),
+                            ymax=mean(gr_yld)+(sd(gr_yld)/sqrt(length(gr_yld))),
+                            type="Grain"))
+
+meas.crops = rbind(ddply(meas.raw.ylds[complete.cases(meas.raw.ylds$st_yld),], c("crop", "source"), summarise,
+                        N=length(st_yld),
+                        mean=mean(st_yld),
+                        se=sd(st_yld)/sqrt(length(st_yld)),
+                        ymin=mean(st_yld)-(sd(st_yld)/sqrt(length(st_yld))),
+                        ymax=mean(st_yld)+(sd(st_yld)/sqrt(length(st_yld))),
+                        type="Stover"),  
+                  ddply(meas.raw.ylds[complete.cases(meas.raw.ylds$gr_yld),], c("crop", "source"), summarise,
+                        N=length(gr_yld),                                             
+                        mean=mean(gr_yld),
+                        se=sd(gr_yld)/sqrt(length(gr_yld)),
+                        ymin=mean(gr_yld)-(sd(gr_yld)/sqrt(length(gr_yld))),
+                        ymax=mean(gr_yld)+(sd(gr_yld)/sqrt(length(gr_yld))),
+                        type="Grain"))
 
 ### Remove all unwanted objects in the environment (all but mod... and meas...?)
 

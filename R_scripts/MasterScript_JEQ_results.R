@@ -34,6 +34,10 @@
 
 #proc.time() - ptm # Check how long the sims took!
 
+#################################################################################
+### BASE ANALYSIS - UP TO 2009 LOOKING AT YIELDS AND C INPUTS FROM MODEL SIMS ###
+#################################################################################
+
 rm(list=ls()) # Clear R environment
 
 ### LOAD LIBRARIES
@@ -46,6 +50,8 @@ library(Rcpp)
 library(ggplot2)
 library(grid)
 library(jsonlite)
+library(gridExtra)
+library(nlme)
 library(magrittr) # Only needed for sensitivity analysis plotting
 
 dodge = position_dodge(width=0.9)
@@ -89,6 +95,10 @@ source(file.path(scriptdir, "yld_calval.R")) # PRODUCE FIGURES THAT SHOW CALIBRA
 
 source(file.path(scriptdir, "Yield_figs_to09.R")) # PRODUCE FIGURES THAT SHOW COMPARISON OF MEASURED AND MODELLED YIELD DATA (1986-2009)
 
+# NOTE - This below is the RMSE of all grain and stover yields compared across all sites, slopes, crops, treatments and years (i.e. everything)
+sqrt(mean((mm.raw$mean.y-mm.raw$mean.x)^2, na.rm=T))
+sqrt(mean((mm.raw$mean.y-mm.raw$mean.x)^2, na.rm=T))/0.44*10 # And in kg/ha
+
 source(file.path(scriptdir, "Yield_tables_to09.R")) # PRODUCE TABLES OF MEASURED AND MODELLED YIELD DATA (1986-2009)
 
 ##############################################################
@@ -104,6 +114,15 @@ source(file.path(scriptdir, "Yield_tables_to09.R")) # PRODUCE TABLES OF MEASURED
 
 source(file.path(scriptdir, "clim_future.R")) # PLOT CLIMATE DATA USED FOR FUTURE SIMULATIONS (>2009)
 
+source(file.path(scriptdir, "clim_summary.R")) # TO PRINT CLIMATE SUMMARIES OF 2010, 2050 and 2100 TO THIS SCREEN
+
+# IF YOU WANT TO CHECK CLIMATE DATA (TEMP OR PRECIP) FOR ANY GIVEN YEAR OR RCP SCENARIO - MAX AND MIN LOOK AT ALL GCMs AND SITES
+#yr1 = 2011
+#rcp1 = "RCP45"
+
+#print(paste("Average Air temp across all sites in ",yr1," under ",rcp1," = ", round(clim_sums$tair[clim_sums$year==yr1&clim_sums$RCP==rcp1],2), " between ", round(clim_sums$tmn[clim_sums$year==yr1&clim_sums$RCP==rcp1],2), " and ", round(clim_sums$tmx[clim_sums$year==yr1&clim_sums$RCP==rcp1],2), sep=""))
+#print(paste("Average Annual Precip across all sites in ",yr1," under ",rcp1," = ", round(clim_sums$crain[clim_sums$year==yr1&clim_sums$RCP==rcp1]*10,0), " between ", round(clim_sums$crainmn[clim_sums$year==yr1&clim_sums$RCP==rcp1]*10,0), " and ", round(clim_sums$crainmx[clim_sums$year==yr1&clim_sums$RCP==rcp1]*10,0), sep=""))
+
 ####################
 # COMPARING SOIL C #
 ####################
@@ -112,12 +131,18 @@ source(file.path(scriptdir, "DAP_soilC.R")) # IMPORT, FORMAT AND SAVE MEASURED S
 
 source(file.path(scriptdir, "DC_cin_soil.R")) # CREATES AND SAVES ALL MODEL SIMULATION INFORMATION REPORTED IN LIS FILES (GRAPH 1to1 OF SOIL C)
 
+# This gives the overall RMSE of measured vs modelled soil C stock values (site*slope*treatment*year)
+sqrt(mean((slc.comparison[slc.comparison$year %in% c(1985,1997,2015),]$mean.y-slc.comparison[slc.comparison$year %in% c(1985,1997,2015),]$mean.x)^2, na.rm=T)) # Note - in gC/m2
+
+source(file.path(scriptdir, "SoilC_rates.R")) # CALCULATE SOIL C SEQUESTRATION RATES FOR WCF, OPP AND GRASS AND SAVE CSV TABLE. p.seqrates is equivalent figure
+
 ###############################################
 # GRAPHING FUTURE YIELDS AND C INPUTS TO SOIL #
 ###############################################
 
+# WARNING - THIS SCRIPT CAN TAKE A LONG TIME!!
 source(file.path(scriptdir, "Yield_figs_from09.R")) # PRODUCE FIGURES OF GRAIN AND STOVER YIELDS AFTER 2009 (VARIABILITY AND BY PHASE) 
-# Note - could be annualized timeline if borrow code from create.gifs and estimate annualized for every 12 years
+# Note - if you run the annualized timeline (every 12-year phase) again then this will take roughly 2 hours
 
 source(file.path(scriptdir, "Cin_figures_from09.R")) # PRODUCE FIGURES OF C INPUTS TO SOIL (AFTER 2009 ONLY)
 
@@ -148,7 +173,8 @@ source(file.path(scriptdir, "LHC-sens-constants.R"))
 
 ### BEFORE RUNNING YOU MUST FIRST RUN sens_lx.sh FROM THE TERMINAL IN LINUX
 # This script will take a VERY long time to run (around 7 full days for 1024 sims) 
-# depending on how many iterations (runs) are specified in LHC-sens-constants.R
+# depending on how many iterations (runs) are specified in LHC-sens-constants.R 
+# *** approximately 7 minutes per iteration specified *** (e.g. 30 mins for 4 sims, 115 hours 1000 sims)
 source(file.path(scriptdir, "sens.R"))
 
 source(file.path(scriptdir, "plot_sens.R")) # Create plots of the sensitivity results from above script

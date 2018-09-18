@@ -250,7 +250,7 @@ ROOTS     Moldboard_Plow
 5.000             'CLTEFF(2)'
 5.000             'CLTEFF(3)'
 2.000             'CLTEFF(4)'
-N     NO-TILL-DRILL
+Nold     NO-TILL-DRILL - Changed name by Andy Robertson on 27 July 2017
 0.0500            CULTRA(1)   
 0.0500            CULTRA(2)   
 0.0000            CULTRA(3)   
@@ -274,3 +274,15 @@ FAL     Moldboard_Plow
 3.000             'CLTEFF(2)'
 3.000             'CLTEFF(3)'
 1.500             'CLTEFF(4)'
+N     NO-TILL-DRILL - Changed by Andy Robertson on 27 July 2017
+0.0500            CULTRA(1)   
+0.0500            CULTRA(2)   
+0.0000            CULTRA(3)   
+0.0500            CULTRA(4)   
+0.0500            CULTRA(5)   
+0.0500            CULTRA(6)   
+0.1000            CULTRA(7)   
+1.0000            CLTEFF(1)   
+3.7500            CLTEFF(2)   - Changed from 1.0
+3.7500            CLTEFF(3)   - Changed from 1.0
+1.3000            CLTEFF(4)	  - Changed from 1.0

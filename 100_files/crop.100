@@ -3961,7 +3961,7 @@ FSORG  sorghum_Based_on_dryland_corn_9/14/01_KP
 80                'DDEMERG'
 730               'DDLAIMX'
 SYBN1   Soybeans_(HIMAX_lowered)
-0.060		'PRDX(1)'
+0.025		'PRDX(1)' # Changed from 0.06 by ARobertson 1/8/17
 27.0              'PPDF(1)'
 40.0              'PPDF(2)' 40 8/20/10 SAW
 1.0               'PPDF(3)'
@@ -4011,8 +4011,8 @@ SYBN1   Soybeans_(HIMAX_lowered)
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.35              'HIMAX'       6/8/10 SAW 0.31
-0.5               'HIWSF'       0.25 8/13/10 SAW .5
+0.5              'HIMAX'       6/8/10 SAW 0.31 #0.35
+0.17               'HIWSF'       0.25 8/13/10 SAW .5  #0.5
 1.0               'HIMON(1)'    6/18/10 SAW 2
 0.0               'HIMON(2)'    6/18/10 SAW 1
 0.7               'EFRGRN(1)'   022112 0.8
@@ -14289,9 +14289,9 @@ MS    mustard stand-in -millet_lower_prdx
 80                'DDEMERG'
 730               'DDLAIMX'
 MILO     Based on Sorghum       YZ  # Used to be MILL - NEW PARAMETERS changed by Andy Robertson on 12/06/2016
-0.117		      'PRDX(1)'      # Changed from 0.111 by Andy Robertson 12/6/2016
-30.0              'PPDF(1)'
-45.0              'PPDF(2)'
+0.111		      'PRDX(1)'      # Changed from 0.111 by Andy Robertson 12/6/2016
+25.0              'PPDF(1)'     # Changed from 30 by Andy Robertson 31/7/2017
+45.0              'PPDF(2)'     # Changed from 45 by Andy Robertson 31/7/2017
 1.0               'PPDF(3)'
 2.5               'PPDF(4)'
 0.0               'BIOFLG'
@@ -14340,7 +14340,7 @@ MILO     Based on Sorghum       YZ  # Used to be MILL - NEW PARAMETERS changed b
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
 0.5               'HIMAX'      # Changed from 0.5 by Andy Robertson 12/6/2016
-0.8              'HIWSF'      # Changed from 0.35 by Andy Robertson 12/14/2016
+0.18              'HIWSF'      # Changed from 0.35 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'
 0.0               'HIMON(2)'
 0.75              'EFRGRN(1)'
@@ -14387,7 +14387,7 @@ MILO     Based on Sorghum       YZ  # Used to be MILL - NEW PARAMETERS changed b
 6.0               'CLAYPG'
 0.5               'CMIX'
 -10.0              'TMPGERM'
-650.0            'DDBASE'      # Changed from 600 by Andy Robertson 12/6/2016
+640.0            'DDBASE'      # Changed from 600 by Andy Robertson 12/6/2016
 -3.0               'TMPKILL'
 10                'BASETEMP'
 30                'BASETEMP(2)'
@@ -14407,7 +14407,7 @@ MILO     Based on Sorghum       YZ  # Used to be MILL - NEW PARAMETERS changed b
 0.35              'LEAFMX'
 0.0              'LEAFPM'
 80                'DDEMERG'
-650              'DDLAIMX'         # Changed from 600 by Andy Robertson 12/6/2016
+640              'DDLAIMX'         # Changed from 600 by Andy Robertson 12/6/2016
 MLEX     Based on Sorghum       YZ  # Used to be MILL - OLD PARAMETERS changed by Andy Robertson on 11/15/2016
 0.111		'PRDX(1)'
 30.0              'PPDF(1)'
@@ -14529,7 +14529,7 @@ MLEX     Based on Sorghum       YZ  # Used to be MILL - OLD PARAMETERS changed b
 80                'DDEMERG'
 600              'DDLAIMX'
 W3SG    Winter wheat HardRed,new LAI # Calibrated against NASS irrigated yields at Logan County (Sterling)
-0.155           'PRDX(1)'   # Changed by Andy Robertson on 3/27/2017 from 0.145
+0.182           'PRDX(1)'   # Changed by Andy Robertson on 3/27/2017 from 0.145
 20.0              'PPDF(1)'   
 40.0              'PPDF(2)'   
 0.7               'PPDF(3)'   
@@ -14579,7 +14579,7 @@ W3SG    Winter wheat HardRed,new LAI # Calibrated against NASS irrigated yields 
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.4               'HIMAX'     
+0.42               'HIMAX'     
 0.35              'HIWSF'       # Changed from 0.5 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  
@@ -14649,7 +14649,7 @@ W3SG    Winter wheat HardRed,new LAI # Calibrated against NASS irrigated yields 
 0                'DDEMERG'
 850              'DDLAIMX'        # Changed from 900 by Andy Robertson 12/14/2016
 W3SN    Winter wheat HardRed,new LAI  # Calibrated against NASS irrigated yields at Kit Carson County (Stratton)
-0.1550           'PRDX(1)'          # Changed from 0.145 by Andy Robertson 12/14/2016
+0.185           'PRDX(1)'          # Changed from 0.145 by Andy Robertson 12/14/2016
 20.0              'PPDF(1)'   
 40.0              'PPDF(2)'   
 0.7               'PPDF(3)'   
@@ -14699,8 +14699,8 @@ W3SN    Winter wheat HardRed,new LAI  # Calibrated against NASS irrigated yields
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.4               'HIMAX'     
-0.6              'HIWSF'       # Changed from 0.5 by Andy Robertson 12/14/2016
+0.42               'HIMAX'     
+0.52              'HIWSF'       # Changed from 0.5 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  
 0.65              'EFRGRN(1)' 
@@ -14769,7 +14769,7 @@ W3SN    Winter wheat HardRed,new LAI  # Calibrated against NASS irrigated yields
 0                'DDEMERG'
 1000              'DDLAIMX'       # Changed from 1000 by Andy Robertson 12/14/2016
 W3WS    Winter wheat HardRed,new LAI  # Calibrated against NASS irrigated yields at Baca County (Walsh)
-0.1450           'PRDX(1)'   
+0.1420           'PRDX(1)'   
 20.0              'PPDF(1)'   
 40.0              'PPDF(2)'   
 0.7               'PPDF(3)'   
@@ -14819,8 +14819,8 @@ W3WS    Winter wheat HardRed,new LAI  # Calibrated against NASS irrigated yields
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.5               'HIMAX'     # Changed from 0.4 by Andy Robertson 12/14/2016
-0.7              'HIWSF'       # Changed from 0.5 by Andy Robertson 12/14/2016
+0.6               'HIMAX'     # Changed from 0.4 by Andy Robertson 12/14/2016
+0.65              'HIWSF'       # Changed from 0.5 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  
 0.65              'EFRGRN(1)' 
@@ -15009,7 +15009,7 @@ SRGSG      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields 
 80                'DDEMERG'
 800              'DDLAIMX'
 SRGSN      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields at Kit Carson County (Stratton)
-0.0950              'PRDX(1)'    # Changed from 0.118 by Andy Robertson 12/14/2016
+0.0920              'PRDX(1)'    # Changed from 0.118 by Andy Robertson 12/14/2016
 30.0              'PPDF(1)'
 45.0              'PPDF(2)'
 1.0               'PPDF(3)'
@@ -15060,7 +15060,7 @@ SRGSN      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields 
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
 0.5               'HIMAX'       # Changed from 0.5 by Andy Robertson 12/14/2016
-0.45              'HIWSF'        # Changed from 0.3 by Andy Robertson 12/14/2016
+0.15              'HIWSF'        # Changed from 0.3 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'
 0.0               'HIMON(2)'
 0.75              'EFRGRN(1)'
@@ -15129,7 +15129,7 @@ SRGSN      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields 
 80                'DDEMERG'
 1000              'DDLAIMX'     # Changed from 800 by Andy Robertson 12/14/2016
 SRGWS      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields at Baca County (Walsh)
-0.0920              'PRDX(1)'  # Changed from 0.118 by Andy Robertson 12/14/2016
+0.0950              'PRDX(1)'  # Changed from 0.118 by Andy Robertson 12/14/2016
 30.0              'PPDF(1)'
 45.0              'PPDF(2)'
 1.0               'PPDF(3)'
@@ -15232,7 +15232,7 @@ SRGWS      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields 
 10                'BASETEMP'
 30                'BASETEMP(2)'
 600                'MNDDHRV'
-750               'MXDDHRV'        # Changed from 800 by Andy Robertson 12/14/2016
+850               'MXDDHRV'        # Changed from 800 by Andy Robertson 12/14/2016
 120.0             'CURGDYS'
 0.5               'CLSGRES'
 0.12              'CMXTURN'
@@ -15249,7 +15249,7 @@ SRGWS      # Grain sorghum - New LAI - Calibrated against NASS irrigated yields 
 80                'DDEMERG'
 800              'DDLAIMX'         # Changed from 1000 by Andy Robertson 12/14/2016
 C6SG    corn, Relative Maturity 98-105  # New LAI - Calibrated against NASS irrigated yields at Logan County (Sterling)
-0.125              'PRDX(1)'           # Changed from 0.155 by Andy Robertson 12/14/2016
+0.127              'PRDX(1)'           # Changed from 0.155 by Andy Robertson 12/14/2016
 27.0              'PPDF(1)'   
 45.0              'PPDF(2)'   
 1.0               'PPDF(3)'   
@@ -15299,7 +15299,7 @@ C6SG    corn, Relative Maturity 98-105  # New LAI - Calibrated against NASS irri
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.55               'HIMAX'   6/15/10 SAW 0.60  
+0.51               'HIMAX'   6/15/10 SAW 0.60  
 0.15               'HIWSF'          # Changed from 0.7 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  
@@ -15369,7 +15369,7 @@ C6SG    corn, Relative Maturity 98-105  # New LAI - Calibrated against NASS irri
 80                'DDEMERG'
 700               'DDLAIMX'
 C6SN    corn, Relative Maturity 98-105   # New LAI - Calibrated against NASS irrigated yields at Kit Carson County (Stratton)
-0.130              'PRDX(1)'        # Changed from 0.155 by Andy Robertson 12/14/2016
+0.133              'PRDX(1)'        # Changed from 0.155 by Andy Robertson 12/14/2016
 27.0              'PPDF(1)'   
 45.0              'PPDF(2)'   
 1.0               'PPDF(3)'   
@@ -15419,8 +15419,8 @@ C6SN    corn, Relative Maturity 98-105   # New LAI - Calibrated against NASS irr
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.55               'HIMAX'   6/15/10 SAW 0.60  
-0.10               'HIWSF'          # Changed from 0.7 by Andy Robertson 12/14/2016
+0.53               'HIMAX'   6/15/10 SAW 0.60  
+0.07               'HIWSF'          # Changed from 0.7 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  
 0.75              'EFRGRN(1)' 
@@ -15539,7 +15539,7 @@ C6WS    corn, Relative Maturity 98-105  # New LAI - Calibrated against NASS irri
 0.0               'FLIGNI(2,2)'
 0.06              'FLIGNI(1,3)'
 0.0               'FLIGNI(2,3)'
-0.55               'HIMAX'   6/15/10 SAW 0.60  
+0.52               'HIMAX'   6/15/10 SAW 0.60  
 0.3               'HIWSF'          # Changed from 0.5 by Andy Robertson 12/14/2016
 1.0               'HIMON(1)'  
 0.0               'HIMON(2)'  

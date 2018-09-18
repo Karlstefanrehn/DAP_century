@@ -123,6 +123,7 @@ facet_wrap(~ site*treat, ncol = 5)
 
 # Make new object before reformatting
 soils.CI = soils.out.ci
+soils.CI$treat[soils.CI$treat=="OPP"] = "CC"
 
 # Convert site column to all capitals and reorder output levels
 soils.CI$site = toupper(soils.CI$site)
@@ -142,9 +143,9 @@ soils.CI$uniq = paste(soils.CI$treat,"_",soils.CI$slope,sep="")
 soils.CI$uniq = factor(soils.CI$uniq, levels=c("WF_Summit","WF_Side","WF_Toe",
                                                "WCF_Summit","WCF_Side","WCF_Toe",
                                                "WCMF_Summit","WCMF_Side","WCMF_Toe",
-                                               "OPP_Summit","OPP_Side","OPP_Toe",
+                                               "CC_Summit","CC_Side","CC_Toe",
                                                "Grass_Summit","Grass_Side","Grass_Toe"))
-soils.CI.slope$treat = factor(soils.CI.slope$treat, levels=c("WF","WCF","WCMF","OPP","Grass"))
+soils.CI.slope$treat = factor(soils.CI.slope$treat, levels=c("WF","WCF","WCMF","CC","Grass"))
 
 # OVER TREATMENT AND SLOPE
 # Graph as a tile plot and save the object for output later
@@ -238,6 +239,7 @@ ylds.out.ci = rbind(ylds.out.ci, ylds.out.ci2, ylds.out.ci3)
 rm(ylds.out.ci2, ylds.out.ci3)
 
 ylds.CI = ylds.out.ci
+ylds.CI$treat[ylds.CI$treat=="OPP"] = "CC"
 
 ylds.CI$site = toupper(ylds.CI$site)
 ylds.CI$output = factor(ylds.CI$output, levels=c("Biomass","NPP","NEE"))
@@ -253,9 +255,9 @@ ylds.CI$uniq = paste(ylds.CI$treat,"_",ylds.CI$slope,sep="")
 ylds.CI$uniq = factor(ylds.CI$uniq, levels=c("WF_Summit","WF_Side","WF_Toe",
                                                "WCF_Summit","WCF_Side","WCF_Toe",
                                                "WCMF_Summit","WCMF_Side","WCMF_Toe",
-                                               "OPP_Summit","OPP_Side","OPP_Toe",
+                                               "CC_Summit","CC_Side","CC_Toe",
                                                "Grass_Summit","Grass_Side","Grass_Toe"))
-ylds.CI.slope$treat = factor(ylds.CI.slope$treat, levels=c("WF","WCF","WCMF","OPP","Grass"))
+ylds.CI.slope$treat = factor(ylds.CI.slope$treat, levels=c("WF","WCF","WCMF","CC","Grass"))
 
 p.sens.ylds = ggplot(ylds.CI[!ylds.CI$variable == "global", ],aes(x=variable,y=uniq, fill = ci)) +
   geom_tile(colour = "white",
@@ -352,6 +354,7 @@ ghgs.out.ci = rbind(ghgs.out.ci, ghgs.out.ci2, ghgs.out.ci3)
 rm(ghgs.out.ci2, ghgs.out.ci3)
 
 ghgs.CI = ghgs.out.ci
+ghgs.CI$treat[ghgs.CI$treat=="OPP"] = "CC"
 
 ghgs.CI$site = toupper(ghgs.CI$site)
 ghgs.CI$output = factor(ghgs.CI$output, levels=c("CO2","CH4","N2O"))
@@ -367,9 +370,9 @@ ghgs.CI$uniq = paste(ghgs.CI$treat,"_",ghgs.CI$slope,sep="")
 ghgs.CI$uniq = factor(ghgs.CI$uniq, levels=c("WF_Summit","WF_Side","WF_Toe",
                                              "WCF_Summit","WCF_Side","WCF_Toe",
                                              "WCMF_Summit","WCMF_Side","WCMF_Toe",
-                                             "OPP_Summit","OPP_Side","OPP_Toe",
+                                             "CC_Summit","CC_Side","CC_Toe",
                                              "Grass_Summit","Grass_Side","Grass_Toe"))
-ghgs.CI.slope$treat = factor(ghgs.CI.slope$treat, levels=c("WF","WCF","WCMF","OPP","Grass"))
+ghgs.CI.slope$treat = factor(ghgs.CI.slope$treat, levels=c("WF","WCF","WCMF","CC","Grass"))
 
 p.sens.ghgs = ggplot(ghgs.CI[!ghgs.CI$variable == "global", ],aes(x=variable,y=uniq, fill = ci)) +
   geom_tile(colour = "white",
@@ -418,3 +421,60 @@ p.sens.ghgs2 = ggplot(ghgs.CI.slope[!ghgs.CI.slope$variable == "global", ],aes(x
 save(ghgs.CI, file=file.path(sensdir, "sens_ghgs_output"))
 ggsave(p.sens.ghgs, file=file.path(sensdir, "sens_ghgs.pdf"), width=400, height=250, units="mm")
 ggsave(p.sens.ghgs2, file=file.path(sensdir, "sens_ghgs_slope.pdf"), width=280, height=190, units="mm")
+
+### COMBINING SENSITIVITY RESULTS TO PRODUCE ONE PLOT
+
+all.sens = rbind(ylds.CI[ylds.CI$variable != "global" & ylds.CI$output == "Biomass",],
+                 ghgs.CI[ghgs.CI$variable != "global" & ghgs.CI$output == "CO2",],
+                 soils.CI[soils.CI$variable != "global" & soils.CI$output == "Total SOC",])
+
+p.sens = ggplot(all.sens,aes(x=variable,y=uniq, fill = ci)) +
+  geom_tile(colour = "white",
+            width = 0.9, height = 0.9) +
+  facet_wrap(~ site*output, ncol = 3) +
+  scale_fill_continuous(low = "#fef0d9", high = "#d7301f", # colorbrewer2 4-class OrRd
+                        limits = c(0, 100),
+                        guide = guide_colourbar(title.position = "bottom")) +
+  scale_x_discrete(labels = c("B.D.", "Clay", "pH", "Prec", "Temp")) +	
+  geom_text(aes(label=format(round(ci,1),nsmall=1)), size = 3) +
+  labs(x = "Variable",
+       y = "Treatment_Slope",
+       fill = expression(Contribution~index~(italic(ci)))) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text.y = element_text(size = 9),
+        axis.text.x = element_text(size = 9),
+        axis.title.x = element_text(vjust = 0, size = 11),
+        plot.title = element_text(hjust = 1.8),
+        panel.spacing = unit(2, "lines"),
+        legend.position = "bottom")
+
+all.sens2 = rbind(ylds.CI.slope[ylds.CI.slope$variable != "global" & ylds.CI.slope$output == "Biomass",],
+             ghgs.CI.slope[ghgs.CI.slope$variable != "global" & ghgs.CI.slope$output == "CO2",],
+             soils.CI.slope[soils.CI.slope$variable != "global" & soils.CI.slope$output == "Total SOC",])
+
+p.sens2 = ggplot(all.sens2, aes(x=variable,y=treat, fill = ci2)) +
+  geom_tile(colour = "white",
+            width = 0.9, height = 0.9) +
+  facet_wrap(~ site*output, ncol = 3) +
+  scale_fill_continuous(low = "#fef0d9", high = "#d7301f", # colorbrewer2 4-class OrRd
+                        limits = c(0, 100),
+                        guide = guide_colourbar(title.position = "bottom")) +
+  scale_x_discrete(labels = c("B.D.", "Clay", "pH", "Prec", "Temp")) +	
+  geom_text(aes(label=format(round(ci2,1),nsmall=1)), size = 3) +
+  labs(x = "Variable",
+       y = "Treatment",
+       fill = expression(Contribution~index~(italic(ci)))) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text.y = element_text(size = 9),
+        axis.text.x = element_text(size = 9),
+        axis.title.x = element_text(vjust = 0, size = 11),
+        plot.title = element_text(hjust = 1.8),
+        panel.spacing = unit(2, "lines"),
+        legend.position = "bottom")
+
+ggsave(p.sens, file=file.path(sensdir, "sens_comp.pdf"), width=400, height=250, units="mm")
+ggsave(p.sens2, file=file.path(sensdir, "sens_comp_slope.pdf"), width=280, height=190, units="mm")

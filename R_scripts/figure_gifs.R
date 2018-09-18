@@ -13,10 +13,18 @@ for(i in 2009:2087) {
 
 gif_data = rbindlist(all_data2)
 
-gif_summary = ddply(gif_data, c("year","site","trt","RCP","phase","source"), summarise,
-              cinx = mean(cinput),
-              tcx = mean(somtc),
-              N = length(time))
+# DDPLY CAN BE SLOW WORKING WITH LARGE DATA FRAMES SO USE DATA TABLE INSTEAD - should be the same output
+#gif_summary = ddply(gif_data, c("year","site","trt","RCP","phase","source"), summarise,
+#              cinx = mean(cinput),
+#              tcx = mean(somtc),
+#              N = length(time))
+
+gif_summary = gif_data[,list(cinx = mean(cinput),
+                             tcx = mean(somtc),
+                             N = length(time)),
+                      by=list(year,site,trt,RCP,phase,source)]
+
+gif_summary = as.data.frame(gif_summary)
 
 # OTHER FACTORS THAT COULD BE GRAPHED
 #             cin.upper = quantile(cinput, probs=0.975),
@@ -174,13 +182,24 @@ if(Sys.info()["sysname"]=="Windows"){
 } 
 
 # SAME AS ABOVE BUT USING ALL POINTS! - CHOOSE THE VARIABLES BY CHANGING LIST OBJECTS
-gif_summary = ddply(gif_data, c("site","slope","trt","treat","GCM","RCP","phase","source"), summarise,
-                    cin = sum(cinput),
-                    tc = last(somtc)-first(somtc),
-                    defac = mean(abgdefac),
-                    prc = sum(prcann),
-                    resp = sum(resp.1.),
-                    N = length(time))
+# DDPLY CAN BE SLOW WORKING WITH LARGE DATA FRAMES SO USE DATA TABLE INSTEAD - should be the same output
+#gif_summary = ddply(gif_data, c("site","slope","trt","treat","GCM","RCP","phase","source"), summarise,
+#                    cin = sum(cinput),
+#                    tc = last(somtc)-first(somtc),
+#                    defac = mean(abgdefac),
+#                    prc = sum(prcann),
+#                    resp = sum(resp.1.),
+#                    N = length(time))
+
+gif_summary = gif_data[,list(cin = sum(cinput),
+                              tc = last(somtc)-first(somtc),
+                              defac = mean(abgdefac),
+                              prc = sum(prcann),
+                              resp = sum(resp.1.),
+                              N = length(time)),
+                        by=list(site,slope,treat,trt,GCM,RCP,phase,source)]
+
+gif_summary = as.data.frame(gif_summary)
 
 nrow(gif_summary[gif_summary$N!=12,]) # Check how many points aren't made up of 12 years (they should be!)
 graphdf = gif_summary[gif_summary$N==12,] # Limit the dataframe to only those with 12 years of points
@@ -332,7 +351,7 @@ alphalev = 0.2
 pointsize = 1
 
 for(phs in phaseLIST) {
-  df = graphdf2[graphdf2$phase==phs,]
+  df = graphdf[graphdf$phase==phs,]
   plt = suppressWarnings(pltfunc(df,xvar=xvar,yvar=yvar,colvar="trt",colnme="Treatment"))
   ggsave(plt, file=file.path(figdir,"gif_pics",paste(phs,".png",sep="")), height=125, width=250, dpi=100, units="mm")
 }
@@ -360,7 +379,7 @@ ylimup = max(graphdf[[yvar]]) # Dataframe-specific y-axis maximum
 ylimdwn = min(graphdf[[yvar]]) # Dataframe-specific y-axis minimum
 
 for(phs in phaseLIST) {
-  df = graphdf2[graphdf2$phase==phs,]
+  df = graphdf[graphdf$phase==phs,]
   plt = suppressWarnings(pltfunc(df,xvar=xvar,yvar=yvar,colvar="trt",colnme="Treatment"))
   ggsave(plt, file=file.path(figdir,"gif_pics",paste(phs,".png",sep="")), height=125, width=250, dpi=100, units="mm")
 }
@@ -375,6 +394,36 @@ if(Sys.info()["sysname"]=="Windows"){
   #  system("find . -type f -iname '*.png' -delete") # Remove png files if desired
 } 
 
+### GRAPHING CO2 EMISSIONS VS C INPUTS
+
+xvar = "cin"
+yvar = "resp"
+
+xlabel = expression(paste("Average Total Inputs (gC ", m^-2,")")) # X-axis label based on variable of desire
+ylabel = expression(paste("Cumulative CO2 Emissions (gC ", m^-2,")")) # Y-axis label based on variable of desire
+
+xlimup = max(graphdf[[xvar]]) # Dataframe-specific x-axis maximum
+xlimdwn = min(graphdf[[xvar]]) # Dataframe-specific x-axis minimum
+ylimup = max(graphdf[[yvar]]) # Dataframe-specific y-axis maximum
+ylimdwn = min(graphdf[[yvar]]) # Dataframe-specific y-axis minimum
+
+for(phs in phaseLIST) {
+  df = graphdf[graphdf$phase==phs,]
+  plt = suppressWarnings(pltfunc(df,xvar=xvar,yvar=yvar,colvar="trt",colnme="Treatment"))
+  ggsave(plt, file=file.path(figdir,"gif_pics",paste(phs,".png",sep="")), height=125, width=250, dpi=100, units="mm")
+}
+
+setwd(file.path(figdir,"gif_pics"))
+
+if(Sys.info()["sysname"]=="Windows"){
+  system('"C:/Program Files/ImageMagick-7.0.5-Q16/convert.exe" -delay 15 *.png cin_vs_resp.gif')
+  #  system('del /p /s *.png') # Remove png files if desired
+} else{
+  system('convert -delay 15 *.png cin_vs_resp.gif')
+  #  system("find . -type f -iname '*.png' -delete") # Remove png files if desired
+} 
+
+
 ### GRAPHING PRECIPITATION VS C INPUTS
 
 xvar = "cin"
@@ -388,7 +437,7 @@ ylimup = max(graphdf[[yvar]]) # Dataframe-specific y-axis maximum
 ylimdwn = min(graphdf[[yvar]]) # Dataframe-specific y-axis minimum
 
 for(phs in phaseLIST) {
-  df = graphdf2[graphdf2$phase==phs,]
+  df = graphdf[graphdf$phase==phs,]
   plt = suppressWarnings(pltfunc(df,xvar=xvar,yvar=yvar,colvar="trt",colnme="Treatment"))
   ggsave(plt, file=file.path(figdir,"gif_pics",paste(phs,".png",sep="")), height=125, width=250, dpi=100, units="mm")
 }

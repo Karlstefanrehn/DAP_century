@@ -72,9 +72,26 @@ meas.raw.slc$site[meas.raw.slc$site == 3] = "Walsh"
 meas.raw.slc$source = "Measured"
 
 meas.raw.slc = meas.raw.slc[meas.raw.slc$depD.profile==20,] # Isolate only data where all layers are reported (therefore to consistent 20cm depth)
+meas.raw.slc = meas.raw.slc[meas.raw.slc$trt != "Additional_trt",] # Drop the additional treatment plots as they're unused in further analysis
+
+### Note - 1985 data is in fact 1986 according to the "DAP_SSW_86and97 Soil fractions carbon nitrgoen top20.xlsx" file using "1986whole" data from LECO analysis
+# Because this is not to strip or treatment level it is justified by the assumption that all sites*slopes should have the same SOC stock regardless of strip or treatment
+# Consequently, the 1985 data is duplicated for all treatments to ease further analysis in R:
+
+trts = levels(as.factor(meas.raw.slc$trt)) # Get levels to loop over
+temp2 = data.frame() # Create dataframe to put the data in
+
+for(treat in trts) {
+  temp = meas.raw.slc[meas.raw.slc$year==1985,]
+  temp$trt = treat # Change treatment name
+  temp2 = rbind(temp2,temp)
+}
+
+meas.raw.slc = unique(rbind(meas.raw.slc, temp2)) # Bind all original data (with all years) to the new dataframe and drop duplicated rows
 
 # Create identical format object to model to aid comparison
-meas.slc.yrs = ddply(meas.raw.slc, c("year", "site", "trt", "source"), summarise,
+
+meas.slc.raw = ddply(meas.raw.slc, c("year", "site", "slope", "treat", "trt", "rep", "treatno", "source"), summarise,
                      N = length(profilesoc),
                      mean = mean(profilesoc),
                      se = sd(profilesoc)/sqrt(length(profilesoc)),
@@ -82,7 +99,15 @@ meas.slc.yrs = ddply(meas.raw.slc, c("year", "site", "trt", "source"), summarise
                      ymax=mean(profilesoc)+(sd(profilesoc)/sqrt(length(profilesoc))),
                      type = "Total C")
 
-mod.slc.yrs = ddply(mod.raw.slc, c("year", "site", "trt", "source"), summarise,
+temp = mod.raw.slc
+temp = subset(temp, temp$monthfrac == 0.0)
+temp = subset(temp, temp$cinput != 0) # This removes the first month of extended simulations by deleting any rows of cumulative columns where 0 is found
+temp$year[temp$monthfrac==0] = temp$year[temp$monthfrac==0]-1 # Month 0.0 is in fact December of the previous year
+temp$monthfrac[temp$monthfrac==0] = 1 # Month 0.0 is in fact December of the previous year
+temp$month = round(temp$monthfrac*12,0)
+temp$rep = 1 # To balance out columns to ease merging
+
+mod.slc.raw = ddply(temp, c("year", "site", "slope", "treat", "trt", "rep", "treatno", "source"), summarise,
                     N = length(somtc),
                     mean = mean(somtc),
                     se = sd(somtc)/sqrt(length(somtc)),
@@ -90,61 +115,71 @@ mod.slc.yrs = ddply(mod.raw.slc, c("year", "site", "trt", "source"), summarise,
                     ymax=mean(somtc)+(sd(somtc)/sqrt(length(somtc))),
                     type = "Total C")
 
-temp = merge(mod.slc.yrs, meas.slc.yrs, all=T)
-temp = temp[temp$trt != "Additional_trt",]
-meas.mod.slc = temp
+temp = merge(mod.slc.raw, meas.slc.raw, all=T)
+meas.mod.raw.slc = temp
 
-# Use object to examine how total C changes in different treatments
-p.mm.slc.1900 = ggplot(temp, aes(x=year,y=mean,colour=trt)) +
-  geom_line(data=temp[temp$source=="Modelled",]) +
-  geom_point(data=temp[temp$source=="Measured",]) +
-  scale_x_continuous(expand=c(0,0),
-                     limits=c(1900,2017)) +
-  scale_y_continuous(expand=c(0,0),
-                     limits=c(0,5000)) +
-  facet_wrap(~site, nrow=1) +
-  ggtitle("Absolute total soil C (gC/m2)") +
-  geom_errorbar(aes(ymax=ymax, ymin=ymin, fill=source), width = 0.25, alpha = 1) +
-  ylab(expression(paste("Total soil C (gC ", m^-2,")"))) +
+# Just to summarise all measured and modelled soil C data
+
+soilC.summary = ddply(meas.mod.raw.slc, c("year", "site", "trt", "source", "type"), summarise,
+                      totN = sum(N),
+                      N = length(mean),
+                      soilc = mean(mean),
+                      minslc = min(mean),
+                      maxslc = max(mean),
+                      sd = sd(mean),
+                      se = sd(mean)/sqrt(length(mean)),
+                      ymax = soilc + (sd/sqrt(length(mean))),
+                      ymin = soilc - (sd/sqrt(length(mean))))
+
+soilC.summary$trt = factor(soilC.summary$trt, levels = c("WF", "WCF", "WCMF", "OPP", "Grass")) # Relevel the treatments that are plotted from least intense to most intense
+
+p.soilC = ggplot(soilC.summary, aes(x=year, y=soilc/100, colour=site, fill=site)) +
+  geom_ribbon(data=soilC.summary[soilC.summary$source=="Modelled",], aes(ymax=ymax/100, ymin=ymin/100), colour=NA, alpha=0.5) +
+  geom_line(data=soilC.summary[soilC.summary$source=="Modelled",]) +
+  geom_point(data=soilC.summary[soilC.summary$source=="Measured"&soilC.summary$year!=1986,]) +
+  geom_errorbar(data=soilC.summary[soilC.summary$source=="Measured"&soilC.summary$year!=1986,], aes(ymin=ymin/100, ymax=ymax/100), width=2) +
+  facet_wrap(~trt, nrow=1) +
+  scale_x_continuous(expand=c(0,0), limits=c(1950,2019), 
+                     breaks=c(1955,1975,1995,2015), labels=c(1955,1975,1995,2015)) +
+  scale_y_continuous(expand=c(0,0), limits=c(8,42)) +
+  ylab(expression(paste("Total soil C (tC ", ha^-1,")"))) +
+  xlab("Year") +
   theme(legend.title = element_text(size=14),
         legend.text = element_text(size=12),
         strip.text.x = element_text(size = 14),
         axis.title.y = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5),
-        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 0.8, vjust = 0.8),
         axis.text = element_text(size = 12, colour = 'black'),
         panel.background = element_blank(),
         axis.line = element_line(colour='black'),
-        panel.grid = element_blank())
+        panel.grid = element_blank()) +
+  scale_colour_manual("Site",
+                      values = c("coral2","cornflowerblue", "darkgreen"),
+                      labels = c("Sterling", "Stratton", "Walsh")) +
+  scale_fill_manual("Site",
+                    values = c("coral2","cornflowerblue", "darkgreen"),
+                    labels = c("Sterling", "Stratton", "Walsh"))
 
-p.mm.slc.1985 = ggplot(temp, aes(x=year,y=mean,colour=trt)) +
-  geom_line(data=temp[temp$source=="Modelled",]) +
-  geom_point(data=temp[temp$source=="Measured",]) +
-  scale_x_continuous(expand=c(0,0),
-                     limits=c(1985,2017)) +
-  scale_y_continuous(expand=c(0,0),
-                     limits=c(0,4000)) +
-  facet_wrap(~site, ncol=3) +
-  ggtitle("Absolute total soil C (gC/m2)") +
-  geom_errorbar(aes(ymax=ymax, ymin=ymin, fill=source), width = 0.25, alpha = 1) +
-  ylab(expression(paste("Total soil C (gC ", m^-2,")"))) +
-  theme(legend.title = element_text(size=14),
-        legend.text = element_text(size=12),
-        strip.text.x = element_text(size = 14),
-        axis.title.y = element_text(size=14),
-        plot.title = element_text(size=18, hjust=0.5),
-        axis.title.x = element_blank(),
-        axis.text = element_text(size = 12, colour = 'black'),
-        panel.background = element_blank(),
-        axis.line = element_line(colour='black'),
-        panel.grid = element_blank())
-
-ggsave(p.mm.slc.1900, file=file.path(figdir, "comp_slc_tc_1900.pdf"), width=550, height=300, units="mm")
-ggsave(p.mm.slc.1985, file=file.path(figdir, "comp_slc_tc_1985.pdf"), width=300, height=250, units="mm")
+ggsave(p.soilC, file=file.path(figdir, "SoilC_1950-2016.pdf"), width=400, height=150, units="mm")
 
 # Save objects of future interest
 save(meas.raw.slc, file=file.path(Robjsdir, "meas.raw.slc"))
+meas.mod.slc = soilC.summary # Because original name is too generic
 save(meas.mod.slc, file=file.path(Robjsdir, "meas.mod.slc"))
+save(meas.mod.raw.slc, file=file.path(Robjsdir, "meas.mod.raw.slc"))
+
+soilC.summary = ddply(meas.mod.raw.slc[meas.mod.raw.slc$year>1984,], c("year", "source", "trt", "type"), summarise,
+                      totN = sum(N),
+                      N = length(mean),
+                      soilc = mean(mean),
+                      minslc = min(mean),
+                      maxslc = max(mean),
+                      sd = sd(mean),
+                      ymax = soilc + (sd/sqrt(length(mean))),
+                      ymin = soilc - (sd/sqrt(length(mean))))
+
+write.csv(soilC.summary, file=file.path(figdir, "soil_carbon_85-16.csv"))
 
 ### Remove all unwanted objects in the environment
 

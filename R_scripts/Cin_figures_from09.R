@@ -4,6 +4,79 @@
 
 # Used in conjunction with MasterScript - see that file for more detail
 
+# First we can very simply use the moving-averages calculated and saved in all_data to summarise over the different treatments
+temp = ddply(all_data, c("year","trt","RCP"), summarise,
+             cin = mean(mavg_cinput),
+             cinhi = quantile(mavg_cinput, probs=0.975),
+             cinlo = quantile(mavg_cinput, probs=0.025),
+             N = length(mavg_cinput))
+
+temp2=temp
+temp2$trt = revalue(temp2$trt, c("OPP"="CC"))
+temp2$trt = factor(temp2$trt, levels = c("WF", "WCF", "WCMF", "CC", "Grass")) # Relevel the treatments that are plotted from least intense to most intense
+
+p.cin.timeline = ggplot(temp2, aes(x=year, y=cin/100, colour=RCP, fill=RCP, linetype=RCP)) +
+  geom_vline(aes(xintercept=1984.5), linetype="dashed", alpha=0.5) +
+  geom_vline(aes(xintercept=1996.5), linetype="dashed", alpha=0.5) +
+  geom_vline(aes(xintercept=2009), linetype="dashed", alpha=0.5) +
+  geom_ribbon(data=temp2[temp2$year<=2009&temp2$RCP=="RCP45",], aes(ymin=cinlo/100, ymax=cinhi/100), colour=NA, fill='black', alpha=0.2) +
+  geom_ribbon(data=temp2[temp2$year>=2009,], aes(ymin=cinlo/100, ymax=cinhi/100), colour=NA, alpha=0.18) +
+  geom_line(data=temp2[temp2$year<=2009&temp2$RCP=="RCP45",], colour='black') +
+  geom_line(data=temp2[temp2$year>=2009,]) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,4.2)) +
+  scale_x_continuous(expand=c(0,0), limits=c(1979,2100), breaks=c(1984,2004,2024,2044,2064,2084), labels=c(1985,2005,2025,2045,2065,2085)) +
+  ylab(expression(paste("Annual C inputs (tC ", ha^-1,")"))) +
+  xlab("Year") +
+  theme(legend.title = element_text(size=14),
+        legend.text = element_text(size=12),
+        strip.text.x = element_text(size = 14),
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.text = element_text(size = 12, colour = 'black'),
+        panel.background = element_blank(),
+        axis.line = element_line(colour='black'),
+        axis.text.x = element_text(angle = 45, hjust = 0.8, vjust = 0.8),
+        panel.grid = element_blank()) +
+  scale_fill_manual("RCP Scenario",
+                    values = c("cornflowerblue","firebrick"),
+                    labels = c("RCP 4.5", "RCP 8.5")) +
+  scale_colour_manual("RCP Scenario",
+                      values = c("cornflowerblue","firebrick"),
+                      labels = c("RCP 4.5", "RCP 8.5")) +
+  scale_linetype_manual("RCP Scenario",
+                        values = c(1,2),
+                        labels = c("RCP 4.5", "RCP 8.5")) 
+
+# To annotate on WF and WCMF facets only we need to create dummy dataframes with all relevant factors
+wf_text = data.frame(year=2002.5, RCP="RCP45", trt = factor("WF", levels = c("WF", "WCF", "WCMF", "OPP", "Grass")))
+wcmf_text = data.frame(year=2002.5, RCP="RCP45", trt = factor("WCMF", levels = c("WF", "WCF", "WCMF", "OPP", "Grass")))
+
+p.cin.timeline = p.cin.timeline + facet_wrap(~trt, ncol=5) + theme(legend.position = "bottom") +
+  guides(colour=guide_legend(title.position = "top", title.hjust = 0.5),
+         fill=guide_legend(title.position = "top", title.hjust = 0.5),
+         linetype=guide_legend(title.position = "top", title.hjust = 0.5)) +
+  geom_text(data=wf_text, aes(y=3), label="W\nC\nM", colour="black") + geom_text(data=wcmf_text, aes(y=3), label="W\nW\nC\nM", colour="black")
+
+ggsave(p.cin.timeline, file=file.path(figdir, "Cinputs_timeline.pdf"), width=450, height=125, units="mm")
+
+### TO CREATE ONE COMPOSITE PLOT WITH CORNER LABELS:
+  
+test1 = arrangeGrob(p.slc.mm.1, top = textGrob("a)",
+                                               x = unit(0, "npc"), y = unit(1, "npc"),
+                                               just=c("left","top"), gp=gpar(col="black", fontsize=14)))
+
+test2 = arrangeGrob(p.totc.85.1, top = textGrob("b)",
+                                                x = unit(0, "npc"), y = unit(1, "npc"),
+                                                just=c("left","top"), gp=gpar(col="black", fontsize=14)))
+
+test3 = arrangeGrob(p.cin.timeline, top = textGrob("c)",
+                                                   x = unit(0, "npc"), y = unit(1, "npc"),
+                                                   just=c("left","top"), gp=gpar(col="black", fontsize=14)))
+
+p.Figure1 = gridExtra::grid.arrange(test1, test2, test3, ncol = 1) 
+ggsave(p.Figure1, file=file.path(figdir, "Figure1.pdf"), width=400, height=300, units="mm")
+
+### TO DO MORE DETAILED GRAPHING AND CREATE SUMMARY TABLES RUN THE CODE BELOW
 # Only interested in 'future' data and select columns
 
 keep = c("time", "year", "site", "slope", "treat", "GCM", "RCP", "cinput", "mavg_cinput") # Include somtc if you want
@@ -205,13 +278,13 @@ p.anlz.cin2 = ggplot(future.cinputs2, aes(x=rot_phs, y=anlz.mean)) +
 ggsave(p.anlz.cin, file=file.path(figdir, "Future C inputs annualised_bysite.pdf"), width=450, height=300, units="mm")
 ggsave(p.anlz.cin2, file=file.path(figdir, "Future C inputs annualised.pdf"), width=450, height=300, units="mm")
 
-save(fut.raw.ann, file=file.path(Robjsdir, "fut.raw.ann"))
+write.csv(future.cinputs2, file=file.path(figdir, "cinputs_by phase.csv"))
 
 ##############
 ### COMBINE TO PUT YIELDS AND C INPUTS ON THE SAME FIGURE
 ##############
 
-future.all = rbind(future.annualised2, future.cinputs2)
+future.all = rbind(fut.phs.annualised2, future.cinputs2)
 
 p.anlz.fut.RCP = ggplot(future.all, aes(x=rot_phs, y=anlz.mean)) +
   geom_bar(stat = 'identity', position = dodge, alpha = 1, aes(fill=type)) +
@@ -253,7 +326,6 @@ p.anlz.all = ggplot(all.all[all.all$RCP=="RCP45"&all.all$source=="Modelled"&all.
         panel.background = element_blank(),
         axis.line = element_line(colour='black'),
         panel.grid = element_blank())
-
 
 ggsave(p.anlz.fut.RCP, file=file.path(figdir, "Annualized future estimates.pdf"), width=500, height=300, units="mm")
 ggsave(p.anlz.all, file=file.path(figdir, "Annualised estimates by phase_RCP45.pdf"), width=500, height=200, units="mm")
