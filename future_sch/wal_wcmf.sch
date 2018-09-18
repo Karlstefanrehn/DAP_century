@@ -1,0 +1,55 @@
+2010         Starting year
+2100        Last year
+site.100       Site file name
+0             Labeling type
+-1            Labeling year
+-1.00         Microcosm
+-1             CO2 Systems
+-1            pH effect
+-1           Soil Warming
+0             N input scalar option
+0             OMAD scalar option
+-1            Climate scalar option
+1            Initial system
+G3           Initial crop
+          Initial tree
+
+Year Month Option
+1             Block #   SPRING WHEAT filler until 2011
+2010          Last year
+1             Repeats # years
+2010          Output starting year
+1            Output month
+0.083          Output interval
+F             Weather choice
+09_100.wth     
+   1    1  CULT HERB
+   1    1  AFRT
+   1    3  CULT N
+   1    107 CROP SW3HR
+   1    107 PLTM 
+   1    250 HARV G
+-999 -999 X
+
+2             Block #   CORN-MILLET-FALLOW-WHEAT until 2100
+2100          Last year
+4             Repeats # years
+2011          Output starting year
+1            Output month
+0.083          Output interval
+C             Weather choice  
+   1    1  CULT HERB
+   1    1  AFRT
+   1  129 CULT N
+   1  129 CROP C6WS
+   1  129 PLTM
+   1  299 HARV G
+   2  152 CULT N
+   2  152 CROP MILO
+   2  152 PLTM 
+   2  265 HARV G   
+   3  264 CULT N
+   3  264 CROP W3WS
+   3  264 PLTM 
+   4  197 HARV G
+-999 -999 X
